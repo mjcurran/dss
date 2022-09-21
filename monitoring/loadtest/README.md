@@ -15,9 +15,9 @@ In each files every action has a weight declared in the `@task(n)` decorator. Yo
 for the format of these values.  Omitting this step will result in Client Initialization failure.
 1. You have 2 options of load testing the ISA or Subscription workflow
     
-    a. For ISA run: `AUTH_SPEC="<auth spec>" locust -f ./monitoring/loadtest/locust_files/ISA.py -H <DSS Endpoint URL>`
+    a. For ISA run: `AUTH_SPEC="<auth spec>" locust -f ./monitoring/loadtest/locust_files/ISA.py --web-host=0.0.0.0 -H <DSS Endpoint URL>`
 
-    b. For Subscription run: `AUTH_SPEC="<auth spec>" locust -f ./monitoring/loadtest/locust_files/Sub.py -H <DSS Endpoint URL>`
+    b. For Subscription run: `AUTH_SPEC="<auth spec>" locust -f ./monitoring/loadtest/locust_files/Sub.py --web-host=0.0.0.0 -H <DSS Endpoint URL>`
 
 ## Running in a Container
 Simply build the Docker container with the Dockerfile from the root directory. All the files are added into the container
@@ -31,9 +31,9 @@ Simply build the Docker container with the Dockerfile from the root directory. A
 
 1. If testing local DSS instance, be sure that the loadtest (monitoring) container has access to the DSS container
 
-    a. For ISA run: `docker run -e AUTH_SPEC="DummyOAuth(http://host.docker.internal:8085/token,uss1)" --network="dss_sandbox_default" -p 8089:8089 interuss/monitoring locust -f loadtest/locust_files/ISA.py`
+    a. For ISA run: `docker run -e AUTH_SPEC="DummyOAuth(http://host.docker.internal:8085/token,uss1)" --add-host host.docker.internal:host-gateway --network="dss_sandbox_default" -p 8089:8089 interuss/monitoring locust -f loadtest/locust_files/ISA.py --web-host=0.0.0.0` 
 
-    b. For ISA run: `docker run -e AUTH_SPEC="DummyOAuth(http://host.docker.internal:8085/token,uss1)" --network="dss_sandbox_default" -p 8089:8089 interuss/monitoring locust -f loadtest/locust_files/Sub.py`
+    b. For ISA run: `docker run -e AUTH_SPEC="DummyOAuth(http://host.docker.internal:8085/token,uss1)" --add-host host.docker.internal:host-gateway --network="dss_sandbox_default" -p 8089:8089 interuss/monitoring locust -f loadtest/locust_files/Sub.py --web-host=0.0.0.0`
 
 ## Use
 1. Navigate to http://localhost:8089
