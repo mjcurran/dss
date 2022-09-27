@@ -12,8 +12,8 @@ ACCESS_TOKEN=$(curl --silent -X POST \
 
 echo "DSS response to [SCD] PUT subscription query:"
 echo "============="
-TIMESTAMP_NOW=$(python -c 'from datetime import datetime; print((datetime.utcnow()).isoformat() + "Z")')
-TIMESTAMP_LATER=$(python -c 'from datetime import datetime, timedelta; print((datetime.utcnow() + timedelta(minutes=5)).isoformat() + "Z")')
+TIMESTAMP_NOW=$(python3 -c 'from datetime import datetime; print((datetime.utcnow()).isoformat() + "Z")')
+TIMESTAMP_LATER=$(python3 -c 'from datetime import datetime, timedelta; print((datetime.utcnow() + timedelta(minutes=5)).isoformat() + "Z")')
 
 
 curl --silent -X PUT  \

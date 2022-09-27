@@ -16,7 +16,8 @@ if [ "$CI" == "true" ]; then
 else
   docker_args=""
 fi
-
+docker_args="--add-host host.docker.internal:host-gateway"
+echo $docker_args
 # shellcheck disable=SC2086
 docker run ${docker_args} --name mock_uss_ridsp \
   --rm \

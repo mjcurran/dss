@@ -53,7 +53,7 @@ if [ "$CI" == "true" ]; then
 else
   docker_args="-it"
 fi
-
+docker_args="--add-host host.docker.internal:host-gateway"
 # shellcheck disable=SC2086
 docker run ${docker_args} --name uss_qualifier \
   --rm \

@@ -17,7 +17,7 @@ else
 fi
 
 # shellcheck disable=SC2086
-docker run ${docker_args} --name mock_uss_riddp \
+docker run --add-host host.docker.internal:host-gateway --name mock_uss_riddp \
   --rm \
   -e MOCK_USS_AUTH_SPEC="${AUTH}" \
   -e MOCK_USS_DSS_URL="${DSS}" \
