@@ -100,6 +100,8 @@ class InjectFlight(APIView):
                 flight_state.vertical_speed = vertical_speed
                 flight_state.save()
                 #position = Position()
+                flight.current_state = flight_state
+                flight.save()
                 flight_pos = tel["position"]
                 flight_pos["flight_state"] = flight_state.id
                 flight_pos["time"] = timestamp
