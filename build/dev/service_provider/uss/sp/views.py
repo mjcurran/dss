@@ -108,7 +108,9 @@ class InjectFlight(APIView):
                 pos_ser = PositionSerializer(data=flight_pos)
                 
                 if pos_ser.is_valid():
-                    pos_ser.save()
+                    new_position = pos_ser.save()
+                    flight_state.current_position = new_position
+                    flight_state.save()
                 else:
                     print(pos_ser)
 

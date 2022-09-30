@@ -20,14 +20,14 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-w7j7*(^sxfu!n3@uc_ua-c28xv!85azshw6zv4875=s=0r$@q='
+SECRET_KEY = 'django-insecure-3+w40*2!w__6rmcbr62ue$h)7a_qenk1mvn6#yd8yu9!i2%0u1'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = []
 
-APPEND_SLASH=False
+
 # Application definition
 
 INSTALLED_APPS = [
@@ -38,7 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
-    'sp',
+    'dp',
 ]
 
 MIDDLEWARE = [
@@ -75,10 +75,11 @@ WSGI_APPLICATION = 'uss.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.0/ref/settings/#databases
 
+"""
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'uss_service_provider',
+        'NAME': 'uss_display_provider',
         'HOST': 'db',
         'USER': 'root',
         'PASSWORD': 'temppasswd'
@@ -88,13 +89,14 @@ DATABASES = {
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'uss_service_provider',
+        'NAME': 'uss_display_provider',
         'HOST': '127.0.0.1',
         'USER': 'root',
         'PASSWORD': ''
     }
 }
-"""
+
+
 # Password validation
 # https://docs.djangoproject.com/en/4.0/ref/settings/#auth-password-validators
 

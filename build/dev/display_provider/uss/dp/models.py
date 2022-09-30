@@ -2,7 +2,6 @@ from django.db import models
 import uuid
 from django.utils import timezone
 
-
 class BusinessModel(models.Model):
     created_at = models.DateTimeField()
     updated_at = models.DateTimeField()
@@ -19,6 +18,8 @@ class BusinessModel(models.Model):
     class Meta:
         abstract = True
 
+
+
 class ServiceArea(BusinessModel):
     id = models.UUIDField(primary_key = True, default = uuid.uuid4, editable = False)
     owner = models.CharField(max_length=255, blank=True, default='')
@@ -29,37 +30,38 @@ class ServiceArea(BusinessModel):
     created_at = models.DateTimeField()
     updated_at = models.DateTimeField()
 
-class Subscriber(BusinessModel):
-    url = models.TextField()
-    id = models.UUIDField(primary_key=True, default = uuid.uuid4, editable=False)
-    service_area = models.ForeignKey('ServiceArea', models.DO_NOTHING, blank=True, null=True)
-    created_at = models.DateTimeField()
-    updated_at = models.DateTimeField()
 
 class Subscription(BusinessModel):
     id = models.UUIDField(primary_key = True, default = uuid.uuid4, editable = False)
-    subscription_id = models.UUIDField(default = uuid.uuid4, editable=False)
     notification_index = models.IntegerField(default=0, blank=True, null=True)
-    subscriber = models.ForeignKey('Subscriber', models.DO_NOTHING, blank=True, null=True)
+    owner = models.CharField(max_length=255, blank=True, default='')
+    time_end = models.DateTimeField(auto_now_add=False)
+    time_start = models.DateTimeField(auto_now_add=True)
+    version = models.CharField(max_length=700, blank=True, default='')
     created_at = models.DateTimeField()
     updated_at = models.DateTimeField()
-    
 
-class SpacialVolume(BusinessModel):
+class Callbacks(BusinessModel):
+    id = models.UUIDField(primary_key = True, default = uuid.uuid4, editable = False)
+    identification_service_area_url = models.CharField(max_length=700, blank=True, default='')
+    subscription = models.ForeignKey('Subscription', models.DO_NOTHING, blank=True, null=True)
+
+class SpatialVolume(BusinessModel):
     id = models.UUIDField(primary_key = True, default = uuid.uuid4, editable = False)
     created_at = models.DateTimeField()
     updated_at = models.DateTimeField()
     altitude_lo = models.IntegerField(blank=True, null=True)
     altitude_hi = models.IntegerField(blank=True, null=True)
-    service_area = models.ForeignKey('ServiceArea', models.DO_NOTHING, blank=True, null=True)
+    subscription = models.ForeignKey('Subscription', models.DO_NOTHING, blank=True, null=True)
 
 class Vertices(BusinessModel):
     id = models.UUIDField(primary_key=True, default = uuid.uuid4, editable=False)
     lng = models.FloatField(blank=True, null=True)
     lat = models.FloatField(blank=True, null=True)
-    spacial_volume = models.ForeignKey('SpacialVolume', models.DO_NOTHING, blank=True, null=True)
+    spatial_volume = models.ForeignKey('SpatialVolume', models.DO_NOTHING, blank=True, null=True)
     created_at = models.DateTimeField()
     updated_at = models.DateTimeField()
+
 
 class FlightState(BusinessModel):
     #{"timestamp": "2022-09-21T15:32:06.372930+00:00", "operational_status": "Airborne", "position":Position, "height": Height, 
@@ -91,6 +93,13 @@ class Position(BusinessModel):
     flight_state = models.ForeignKey('FlightState', models.DO_NOTHING, blank=True, null=True)
     time = models.DateTimeField()
 
+class Location(BusinessModel):
+    id = models.UUIDField(primary_key = True, default = uuid.uuid4, editable = False)
+    created_at = models.DateTimeField()
+    updated_at = models.DateTimeField()
+    lng = models.FloatField(blank=True, null=True)
+    lat = models.FloatField(blank=True, null=True)
+
 class Flight(BusinessModel):
     id = models.UUIDField(primary_key = True, default = uuid.uuid4, editable = False)
     flight_id = models.CharField(max_length=255, blank=True, default='')
@@ -100,14 +109,6 @@ class Flight(BusinessModel):
     current_state = models.ForeignKey('FlightState', models.DO_NOTHING, blank=True, null=True)
     simulated = models.BooleanField(default=False)
     timestamp = models.DateTimeField()
-
-class Location(BusinessModel):
-    id = models.UUIDField(primary_key = True, default = uuid.uuid4, editable = False)
-    created_at = models.DateTimeField()
-    updated_at = models.DateTimeField()
-    lng = models.FloatField(blank=True, null=True)
-    lat = models.FloatField(blank=True, null=True)
-    
 
 class FlightDetails(BusinessModel):
     id = models.UUIDField(primary_key = True, default = uuid.uuid4, editable = False)
