@@ -61,6 +61,7 @@ services:
     depends_on:
       - local-dss-rid-bootstrapper
       - local-dss-scd-bootstrapper
+    restart: on-failure
 
   local-dss-http-gateway:
     build:

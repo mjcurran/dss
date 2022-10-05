@@ -8,7 +8,7 @@
 #  exit 0
 #else
 echo "Allowing time for CRDB node to come up..."
-sleep 3
+sleep 5
 
 echo "Bootstrapping SCD DB..."
 /usr/bin/db-manager \
