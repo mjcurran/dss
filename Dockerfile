@@ -33,8 +33,16 @@ RUN make interuss
 
 FROM alpine:latest
 RUN apk update && apk add ca-certificates
+RUN apk add ethtool
+RUN apk add iproute2
+RUN apk add bash
 COPY --from=build /go/bin/http-gateway /usr/bin
 COPY --from=build /go/bin/core-service /usr/bin
 COPY --from=build /go/bin/db-manager /usr/bin
 COPY --from=build /go/bin/dlv /usr/bin
+RUN mkdir -p /usr/db-schemas
+COPY build/deploy/db_schemas/rid /db-schemas/rid
+COPY build/deploy/db_schemas/scd /db-schemas/scd
+COPY build/test-certs /var/test-certs
 HEALTHCHECK CMD cat service.ready || exit 1
+

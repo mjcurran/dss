@@ -8,7 +8,7 @@ version: '3.8'
 services:
 
   local-dss-crdb:
-    image: cockroachdb/cockroach:v21.2.7
+    image: cockroachdb/cockroach:latest
     command: start-single-node --insecure
     expose:
       - 26257
@@ -20,7 +20,7 @@ services:
     build:
       context: ../..
       dockerfile: Dockerfile
-    image: interuss-local/dss
+    image: interuss-test
     volumes:
       - $PWD/../deploy/db_schemas/rid:/db-schemas/rid:ro
       - local-dss-data:/var/local-dss-data
@@ -34,7 +34,7 @@ services:
     build:
       context: ../..
       dockerfile: Dockerfile
-    image: interuss-local/dss
+    image: interuss-test
     volumes:
       - $PWD/../deploy/db_schemas/scd:/db-schemas/scd:ro
       - local-dss-data:/var/local-dss-data
@@ -48,7 +48,7 @@ services:
     build:
       context: ../..
       dockerfile: Dockerfile
-    image: interuss-local/dss
+    image: interuss-test
     volumes:
       - $PWD/../test-certs:/var/test-certs:ro
       - local-dss-data:/var/local-dss-data
@@ -66,7 +66,7 @@ services:
     build:
       context: ../..
       dockerfile: Dockerfile
-    image: interuss-local/dss
+    image: interuss-test
     volumes:
       - local-dss-data:/var/local-dss-data
       - $PWD/startup:/startup:ro
