@@ -14,6 +14,7 @@ from sp.serializers import UserSerializer, GroupSerializer, FlightSerializer, Fl
 import socket
 from datetime import datetime, timedelta
 import requests
+import os
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -126,7 +127,7 @@ class InjectFlight(APIView):
         # "height": {"distance": 50.0, "reference": "TakeoffLocation"}, "track": 181.6975641099569, "speed": 4.91, "timestamp_accuracy": 0.0, 
         # "speed_accuracy": "SA3mps", "vertical_speed": 0.0}
         hostname = socket.gethostname()
-        flights_url = hostname + "/sp/v1/uss/flights"
+        flights_url = hostname + "/v1/uss/flights"
 
         service_area = ServiceArea()
         service_area.owner = hostname
@@ -176,14 +177,17 @@ class InjectFlight(APIView):
         sw.save()
         se.save()
 
+        auth_host = os.getenv("OAUTH_HOST", "pierce-core-01.crc.nd.edu")
+
         session = requests.Session()
-        response = requests.get("http://pierce-core-01.crc.nd.edu:8085/token?grant_type=client_credentials&sub=uss1&intended_audience=host.docker.internal&issuer=dummy&scope=dss.write.identification_service_areas rid.inject_test_data")
+        response = requests.get("http://"+ auth_host + ":8085/token?grant_type=client_credentials&sub=uss1&intended_audience=host.docker.internal&issuer=dummy&scope=dss.write.identification_service_areas rid.inject_test_data")
         auth_json = response.json()
         access_token = auth_json["access_token"]
         session.headers.update({'Authorization' : 'Bearer ' + access_token})
         id = str(service_area.id)
         print(id)
-        url = "http://pierce-core-01.crc.nd.edu:8082/v1/dss/identification_service_areas/" + id
+        dss_host = os.getenv("DSS_HOST", "pierce-core-01.crc.nd.edu")
+        url = "http://"+ dss_host + ":8082/v1/dss/identification_service_areas/" + id
         print(url)
         body = {}
         footprint = {}
@@ -197,7 +201,8 @@ class InjectFlight(APIView):
         end_time = service_area.time_end.isoformat()
         extents = {"spatial_volume": spac, "time_start": start_time, "time_end": end_time}
         body["extents"] = extents
-        body["flights_url"] = "http://pierce-core-01.crc.nd.edu:8071/mock/ridsp/v1/uss/flights"
+        #body["flights_url"] = "http://pierce-core-01.crc.nd.edu:8071/mock/ridsp/v1/uss/flights"
+        body["flights_url"] = flights_url
         print(body)
         session_res = session.put(url, json=body)
         r = session_res.json()

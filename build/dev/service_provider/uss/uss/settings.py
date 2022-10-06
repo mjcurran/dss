@@ -11,7 +11,7 @@ https://docs.djangoproject.com/en/4.0/ref/settings/
 """
 
 from pathlib import Path
-
+import os
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -74,14 +74,16 @@ WSGI_APPLICATION = 'uss.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/4.0/ref/settings/#databases
-
+DB_HOST = os.getenv('SERVICE_PROVIDER_DB', 'db')
+DB_USER = os.getenv("SERVICE_PROVIDER_USER", "root")
+DB_PASSWORD = os.getenv("SERVICE_PROVIDER_PASS", "temppasswd")
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'uss_service_provider',
-        'HOST': 'db',
-        'USER': 'root',
-        'PASSWORD': 'temppasswd'
+        'HOST': DB_HOST,
+        'USER': DB_USER,
+        'PASSWORD': DB_PASSWORD
     }
 }
 """

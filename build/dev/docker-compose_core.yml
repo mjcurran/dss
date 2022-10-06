@@ -80,8 +80,8 @@ services:
   local-dss-dummy-oauth:
     build:
       context: ../..
-      dockerfile: cmds/dummy-oauth/Dockerfile
-    image: interuss-local/dummy-oauth
+      dockerfile: cmds/dummy-oauth/Dockerfile.core
+    image: core-oauth
     command: -private_key_file /var/test-certs/auth2.key
     ports:
       - "8085:8085"

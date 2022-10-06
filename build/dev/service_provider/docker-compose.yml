@@ -18,6 +18,13 @@ services:
   api:
     #build: .
     image: uss-sp-api:latest
+    container_name: uss_sp
+    environment:
+      - SERVICE_PROVIDER_DB=db
+      - SERVICE_PROVIDER_USER=root
+      - SERVICE_PROVIDER_PASS=temppasswd
+      - OAUTH_HOST=pierce-core-01.crc.nd.edu
+      - DSS_HOST=pierce-core-01.crc.nd.edu
     command: python uss/manage.py runserver 0.0.0.0:8000
     #command: /bin/bash
     volumes:
