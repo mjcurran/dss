@@ -14,7 +14,7 @@ import socket
 from datetime import datetime, timedelta
 import requests
 from dp.models import Subscription, ServiceArea, Callbacks, SpatialVolume, Vertices, Flight, FlightState, Position, FlightDetails
-
+import os
 
 class Subscribe(APIView):
     def put(self, request):
@@ -52,16 +52,19 @@ class Subscribe(APIView):
             vert.spatial_volume = sv
             vert.save()
 
+        auth_host = os.getenv("OAUTH_HOST", "pierce-core-01.crc.nd.edu")
+        dss_host = os.getenv("DSS_HOST", "pierce-core-01.crc.nd.edu")
+
         #serializer = SubscriptionSerializer(data = subscription)
         session = requests.Session()
-        response = requests.get("http://pierce-core-01.crc.nd.edu:8085/token?grant_type=client_credentials&scope=dss.read.identification_service_areas&intended_audience=localhost&issuer=localhost")
+        response = requests.get("http://" + auth_host + ":8085/token?grant_type=client_credentials&scope=dss.read.identification_service_areas&intended_audience=localhost&issuer=localhost")
         auth_json = response.json()
         access_token = auth_json["access_token"]
         session.headers.update({'Authorization' : 'Bearer ' + access_token})
         id = str(subscription.id)
-        url = "http://pierce-core-01.crc.nd.edu:8082/v1/dss/subscriptions/" + id
+        url = "http://" + dss_host + ":8082/v1/dss/subscriptions/" + id
 
-        data["callbacks"] = {"identification_service_area_url": "http://pierce-core-01.crc.nd.edu:8001/dp/uss/identification_service_areas"}
+        data["callbacks"] = {"identification_service_area_url": "http://"+ hostname + ":8001/dp/uss/identification_service_areas"}
         session_res = session.put(url, json=data)
         r = session_res.json()
         print(r)
