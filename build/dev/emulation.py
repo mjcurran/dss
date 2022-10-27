@@ -3,10 +3,11 @@ import json
 import psutil
 import logging
 import time
+import requests
 
 from core.emulator.coreemu import CoreEmu
 from core.emulator.data import IpPrefixes, NodeOptions, LinkOptions
-from core.emulator.enumerations import EventTypes
+from core.emulator.enumerations import EventTypes, NodeTypes
 from core.nodes.docker import DockerNode
 from core.nodes.network import SwitchNode, WlanNode
 from core.location.mobility import BasicRangeModel, Ns2ScriptedMobility
@@ -20,6 +21,7 @@ def node_position_listener(event):
         y = event.node.position.y
         node_id = str(event.node.id)
         print(node_id, x, y)
+        
 
 def main():
 
@@ -36,7 +38,7 @@ def main():
 
     coreemu = globals().get("coreemu", CoreEmu())
     session = coreemu.create_session()
-    session.location.setrefgeo(41.698361, -86.233894, 2.0)
+    session.location.setrefgeo(41.702, -86.235564, 2.0)
     session.location.refscale = 150.0   
     session.set_state(EventTypes.CONFIGURATION_STATE)
     session.options.set_config("controlnet", "172.16.0.0/24")
@@ -44,20 +46,25 @@ def main():
     def node_listener(event):
         position = session.location.getgeo(event.node.position.x, event.node.position.y, event.node.position.z)
         print(position)
+        node_id = str(event.node.id)
+        node_name = event.node.name
+        node_icon = event.node.icon
+        
+        res = requests.post('http://localhost:5000/pushtelemetry', json={"id": node_id, "lat": position[0], "lon": position[1], "name": node_name, "icon": node_icon})
 
     session.event_handlers.append(event_listener)
     #session.exception_handlers.append(event_listener)
     #session.node_handlers.append(node_position_listener)
     session.node_handlers.append(node_listener)
-    session.link_handlers.append(event_listener)
+    #session.link_handlers.append(event_listener)
     #session.file_handlers.append(event_listener)
-    session.config_handlers.append(event_listener)
+    #session.config_handlers.append(event_listener)
 
     # Internal Nodes
     node_mariadb = session.add_node(
         DockerNode,
         options=NodeOptions(
-            name="mariadb", model=None, image=mariadb_image, x=100, y=300
+            name="mariadb", model=None, icon="database_icon.png", image=mariadb_image, x=0, y=0
         ),
     )
     #node_mongodb = session.add_node(
@@ -66,16 +73,17 @@ def main():
     #        name="mongodb", model=None, image=mongodb_image, x=200, y=300
     #    ),
     #)
-    sBackend = session.add_node(SwitchNode, options=NodeOptions(x=150, y=250))
+    sBackend = session.add_node(SwitchNode, options=NodeOptions(icon="router_black.gif", x=150, y=150))
     node_api = session.add_node(
         DockerNode,
-        options=NodeOptions(name="service-provider", model=None, image=api_image, x=150, y=200),
+        options=NodeOptions(name="service-provider", model=None, icon="host.gif", image=api_image, x=100, y=100),
     )
+    #lat=41.70089, lon=-86.234983, alt=0.0, x=150, y=200,
 
-    cockroach = session.add_node(DockerNode, options=NodeOptions(name="cockroach", model=None, image=cockroach_image, x=300, y=400))
-    auth_node = session.add_node(DockerNode, options=NodeOptions(name="dummy_oauth", model=None, image=auth_image, x=300, y=400))
-    dss_service = session.add_node(DockerNode, options=NodeOptions(name="dss_core", model=None, image=dss_service_image, x=350, y=450))
-    dss_gateway = session.add_node(DockerNode, options=NodeOptions(name="dss_gateway", model=None, image=dss_service_image, x=375, y=375))
+    cockroach = session.add_node(DockerNode, options=NodeOptions(name="cockroach", model=None, icon="database_icon.png", image=cockroach_image, x=300, y=400))
+    auth_node = session.add_node(DockerNode, options=NodeOptions(name="dummy_oauth", model=None, icon="oauth_icon.png", image=auth_image, x=300, y=300))
+    dss_service = session.add_node(DockerNode, options=NodeOptions(name="dss_core", model=None, icon="host.gif", image=dss_service_image, x=350, y=450))
+    dss_gateway = session.add_node(DockerNode, options=NodeOptions(name="dss_gateway", model=None, icon="host.gif", image=dss_service_image, x=375, y=375))
 
     pApp = IpPrefixes(ip4_prefix="10.83.0.0/24")
     #session.add_link(node_mongodb.id, sBackend.id, pApp.create_iface(node_mongodb))
@@ -89,7 +97,7 @@ def main():
     # Wlan
     pTransmitter = IpPrefixes(ip4_prefix="10.83.2.0/24")
     #sTransmitter = session.add_node(SwitchNode, options=NodeOptions(x=275, y=100))
-    sTransmitter = session.add_node(WlanNode, options=NodeOptions(x=275, y=100))
+    sTransmitter = session.add_node(WlanNode, options=NodeOptions(icon="wlan.gif", x=250, y=150))
 
     session.mobility.set_model_config(sTransmitter.id, BasicRangeModel.name, {
         "range": "280",
@@ -100,10 +108,10 @@ def main():
     })
 
     session.mobility.set_model_config(sTransmitter.id, Ns2ScriptedMobility.name, {
-            "file": os.path.join(os.path.abspath(os.path.dirname(__file__)), "mobility.ns2"),
-            "refresh_ms": "5000",
+            "file": os.path.join(os.path.abspath(os.path.dirname(__file__)), "scene.ns2"),
+            "refresh_ms": "1000",
             "loop": "1",
-            "autostart": "15.0",
+            "autostart": "20.0",
             "map": "",
             "script_start": "",
             "script_pause": "",
@@ -132,8 +140,8 @@ def main():
         bandwidth=54_000_000,
         delay=5000,
         dup=5,
-        loss=50.5,
-        jitter=0,
+        loss=25.5,
+        jitter=5,
     )
 
     # Setup Mobile Transmitters
@@ -144,6 +152,7 @@ def main():
             options=NodeOptions(
                 name="drone_" + str(i + 1),
                 model=None,
+                icon="drone38.png",
                 image=drone_image,
                 x=(275 + (i % 5) * 75),
                 y=(200 + int(i / 5.0) * 75),
@@ -156,6 +165,20 @@ def main():
 
     # instantiate
     session.instantiate()
+    
+    for id in session.nodes:
+        node = session.nodes[id]
+        if node.position.x != None or node.position.lat != None:
+            if node.position.x != None:
+                position = session.location.getgeo(node.position.x, node.position.y, node.position.z)
+            else:
+                position = (node.position.lat, node.position.lon, node.position.alt)
+            node_name = node.name
+            node_icon = node.icon
+            
+            print(node.__dict__)
+            res = requests.post('http://localhost:5000/pushtelemetry', json={"id": id, "lat": position[0], "lon": position[1], "name": node_name, "icon": node_icon})
+
 
     if True:
         auth_node.client.check_cmd("/usr/bin/dummy-oauth -private_key_file /var/test-certs/auth2.key", wait=False)
@@ -198,6 +221,8 @@ def main():
             drones[i].client.check_cmd(
                 "/bin/bash -c 'python drone.py 10.83.2.4 > /proc/1/fd/1 2> /proc/1/fd/2'", wait=False
             )
+
+    
 
     input("press enter to shutdown")
     coreemu.shutdown()
