@@ -12,6 +12,17 @@ from core.nodes.docker import DockerNode
 from core.nodes.network import SwitchNode, WlanNode
 from core.location.mobility import BasicRangeModel, Ns2ScriptedMobility
 
+
+"""
+Ports:
+Maraidb: 3306
+Service Provider: 8071
+0Auth: 8085
+DSS core: 8081
+DSS gateway:  8082
+Display Provider: 8073
+"""
+
 def event_listener(event):
     print(event)
 
@@ -33,6 +44,7 @@ def main():
     nginx_image =  "pierce-nginx"
     drone_image =  "python-drone"
     cockroach_image = "cockroachdb/cockroach:latest"
+    #cockroach_image = "cockroachdb/cockroach:v21.2.7"
     dss_service_image = "interuss-test"
     auth_image = "core-oauth"
 
@@ -50,7 +62,7 @@ def main():
         node_name = event.node.name
         node_icon = event.node.icon
         
-        res = requests.post('http://localhost:5000/pushtelemetry', json={"id": node_id, "lat": position[0], "lon": position[1], "name": node_name, "icon": node_icon})
+        #res = requests.post('http://localhost:5000/pushtelemetry', json={"id": node_id, "lat": position[0], "lon": position[1], "name": node_name, "icon": node_icon})
 
     session.event_handlers.append(event_listener)
     #session.exception_handlers.append(event_listener)
@@ -64,7 +76,7 @@ def main():
     node_mariadb = session.add_node(
         DockerNode,
         options=NodeOptions(
-            name="mariadb", model=None, icon="database_icon.png", image=mariadb_image, x=0, y=0
+            name="mariadb", model=None, icon="database_icon.png", image=mariadb_image, x=0, y=50
         ),
     )
     #node_mongodb = session.add_node(
@@ -177,7 +189,7 @@ def main():
             node_icon = node.icon
             
             print(node.__dict__)
-            res = requests.post('http://localhost:5000/pushtelemetry', json={"id": id, "lat": position[0], "lon": position[1], "name": node_name, "icon": node_icon})
+            #res = requests.post('http://localhost:5000/pushtelemetry', json={"id": id, "lat": position[0], "lon": position[1], "name": node_name, "icon": node_icon})
 
 
     if True:
@@ -225,6 +237,7 @@ def main():
     
 
     input("press enter to shutdown")
+    session.save_xml("/home/mcurran2/emu_state.xml")
     coreemu.shutdown()
 
 

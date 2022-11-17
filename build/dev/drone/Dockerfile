@@ -16,4 +16,5 @@ COPY requirements.txt /code/
 RUN pip install -r requirements.txt
 COPY . /code/
 
-CMD [ "python3", "drone.py" ]
+#CMD [ "python3", "drone.py" ]
+CMD ["/bin/bash"]
