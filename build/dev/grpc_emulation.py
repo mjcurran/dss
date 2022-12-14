@@ -1,29 +1,31 @@
-import os
-import time
-import logging
-import argparse
-
-from core.api.grpc.client import CoreGrpcClient, InterfaceHelper
-from core.api.grpc.wrappers import NodeType, Position, SessionLocation, Geo, ConfigOption, ConfigOptionType
-from core.emane.models.ieee80211abg import EmaneIeee80211abgModel
-from core.location.geo import GeoLocation
-from core import utils
-
-def node_command(node, cmd):
-    dcmd = f"docker exec {node.name} {cmd}"
-    utils.cmd(dcmd, wait=False, shell=False)
 
 
 def main():
 
+    import os
+    import time
+    import logging
+    import argparse
+
+    from core.api.grpc.client import CoreGrpcClient, InterfaceHelper
+    from core.api.grpc.wrappers import NodeType, Position, SessionLocation, Geo, ConfigOption, ConfigOptionType
+    from core.emane.models.ieee80211abg import EmaneIeee80211abgModel
+    from core.location.geo import GeoLocation
+    from core import utils
+
+    def node_command(node, cmd):
+        dcmd = f"docker exec {node.name} {cmd}"
+        utils.cmd(dcmd, wait=False, shell=False)
+    
     mariadb_image =  "uss-sp-mariadb"
-    mongodb_image =  "pierce-mongo"
+    
     sp_image =  "uss-sp-api"
-    nginx_image =  "pierce-nginx"
+    
     drone_image =  "python-drone"
     cockroach_image = "cockroachdb/cockroach:latest"
     dss_service_image = "interuss-test"
     auth_image = "core-oauth"
+    ubuntu_base = "ubuntu:core"
 
     # Setup Session
     client = CoreGrpcClient()
@@ -60,7 +62,7 @@ def main():
     nUSS = session.add_node(
         next(nodeIds),
         _type=NodeType.DOCKER,
-        name="USS",
+        name="ServiceProvider",
         model=None,
         image=sp_image,
         position=Position(x=400, y=100),
@@ -156,10 +158,11 @@ def main():
     )
     sStadium.icon = "wlan.gif"
 
-    session.add_link(node1=nUSS, node2=sStadium, iface1=pStadium.create_iface(nUSS.id, 0))
+    session.add_link(node1=nUSS, node2=sStadium, iface1=pStadium.create_iface(nUSS.id, 1))
 
     mobility_config = {
-            "file": os.path.join(os.path.abspath(os.path.dirname(__file__)), "mobility.ns2"),
+            #"file": os.path.join(os.path.abspath(os.path.dirname(__file__)), "mobility.ns2"),
+            "file": "/home/mcurran2/dss/build/dev/mobility.ns2",
             "refresh_ms": "1000",
             "loop": "1",
             "autostart": "0.0",
@@ -175,9 +178,9 @@ def main():
     drones = []
 
     ## Interior Drones
-    for i in range(5):
+    for i in range(3):
         xp = i * 75
-        yp = i * 45
+        yp = i * 50
         node = session.add_node(
             next(nodeIds),
             _type=NodeType.DOCKER,
@@ -191,9 +194,9 @@ def main():
         drones.append(node)
 
     # Exterior Drones
-    for i in range(5):
-        xp = i * 250
-        yp = i * 250
+    for i in range(3):
+        xp = i * 200
+        yp = i * 200
         node = session.add_node(
             next(nodeIds),
             _type=NodeType.DOCKER,
@@ -206,6 +209,76 @@ def main():
         session.add_link(node1=node, node2=sStadium, iface1=pStadium.create_iface(node.id, 0))
         drones.append(node)
 
+
+    ## Reciever Nodes
+    nReciever0 = session.add_node(
+        next(nodeIds),
+        _type=NodeType.DOCKER,
+        name="Reciever0",
+        model=None,
+        image=ubuntu_base,
+        position=Position(x=10, y=80),
+    )
+    nReciever0.icon = "antenna55.png"
+    session.add_link(
+        node1=nReciever0, node2=sStadium, iface1=pStadium.create_iface(nReciever0.id, 0)
+    )
+
+    nReciever1 = session.add_node(
+        next(nodeIds),
+        _type=NodeType.DOCKER,
+        name="Reciever1",
+        model=None,
+        image=ubuntu_base,
+        position=Position(x=400, y=100),
+    )
+    nReciever1.icon = "antenna55.png"
+    session.add_link(
+        node1=nReciever1, node2=sStadium, iface1=pStadium.create_iface(nReciever1.id, 0)
+    )
+
+    nReciever2 = session.add_node(
+        next(nodeIds),
+        _type=NodeType.DOCKER,
+        name="Reciever2",
+        model=None,
+        image=ubuntu_base,
+        position=Position(x=100, y=400),
+    )
+    nReciever2.icon = "antenna55.png"
+    session.add_link(
+        node1=nReciever2, node2=sStadium, iface1=pStadium.create_iface(nReciever2.id, 0)
+    )
+
+    nReciever3 = session.add_node(
+        next(nodeIds),
+        _type=NodeType.DOCKER,
+        name="Reciever3",
+        model=None,
+        image=ubuntu_base,
+        position=Position(x=200, y=500),
+    )
+    nReciever3.icon = "antenna55.png"
+    session.add_link(
+        node1=nReciever3, node2=sStadium, iface1=pStadium.create_iface(nReciever3.id, 0)
+    )
+
+    # Display Apps
+    displays = []
+    for i in range(4):
+        xp = i * 100 + 50
+        yp = i * 100 + 100
+        node = session.add_node(
+            next(nodeIds),
+            _type=NodeType.DOCKER,
+            name=f"DisplayApp{i}",
+            model=None,
+            image=ubuntu_base,
+            position=Position(x=xp, y=yp),
+        )
+        node.icon = "pc_display55.png"
+        session.add_link(node1=node, node2=sStadium, iface1=pStadium.create_iface(node.id, 0))
+        displays.append(node)
 
     #with client.context_connect():
         
@@ -236,6 +309,8 @@ def main():
             node.geo = geo
             #print(position)
         
+    for l in session.links:
+        print(l)
 
     node_command(oauth, "/usr/bin/dummy-oauth -private_key_file /var/test-certs/auth2.key")
     node_command(cockroach, "cockroach.sh start-single-node --insecure")

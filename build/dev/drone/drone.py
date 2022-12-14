@@ -7,9 +7,13 @@ import sys
 import uuid
 import time
 
+# takes one argument, the base address of the service provider
+# the "drone" will continue to broadcast telemetry data to the service provider indefinitely
+
 def main(base_url):
 
-    for i in range(100):
+    #for i in range(1000):
+    while True:
         #sp_url = "http://10.83.0.4:8000/sp/inject" # address in emulation.py CORE session
         sp_url = "http://" + base_url + ":8000/sp/inject"
 
